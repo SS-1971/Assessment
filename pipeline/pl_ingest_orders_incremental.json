@@ -1,0 +1,131 @@
+{
+	"name": "pl_ingest_orders_incremental",
+	"properties": {
+		"activities": [
+			{
+				"name": "LK-GetWaterMark",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT WatermarkValue\nFROM dbo.ETL_Watermark\nWHERE SourceSystem = 'SourceAPI'\n  AND EntityName = 'Orders';",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_SQL_Watermark",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "WB-GetToken",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "LK-GetWaterMark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://adf-oauth-api-orders-bhhhdsdjemc3c9c7.centralindia-01.azurewebsites.net/oauth/token",
+					"body": {
+						"grant_type": "client_credentials",
+						"client_id": "demo-client",
+						"client_secret": "demo-secret"
+					}
+				}
+			},
+			{
+				"name": "CD-CopyRawData",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "WB-GetToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"additionalHeaders": {
+							"Authorization": {
+								"value": "Bearer @{activity('WB-GetToken').output.access_token}",
+								"type": "Expression"
+							}
+						},
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings",
+							"filePattern": {
+								"value": "orders_@{formatDateTime(utcnow(),'yyyyMMdd_HHmmss')}.json",
+								"type": "Expression"
+							}
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_RestOrders",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_Raw_Json",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Activity_Pipeline"
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-08-21T11:55:07Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,68 @@
+{
+	"name": "AzureSqlTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_AzureSQL",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "REST_ORDERS"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "order_id",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "order_date",
+				"type": "datetime2",
+				"scale": 3
+			},
+			{
+				"name": "customer_id",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "customer_email",
+				"type": "nvarchar"
+			},
+			{
+				"name": "line_item_sku",
+				"type": "nvarchar"
+			},
+			{
+				"name": "line_item_qty",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "line_item_price",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "raw_payload",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ingest_ts",
+				"type": "datetime2",
+				"scale": 3
+			},
+			{
+				"name": "source_file",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "stg_Orders"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

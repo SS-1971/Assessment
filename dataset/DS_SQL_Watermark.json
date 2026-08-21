@@ -1,0 +1,47 @@
+{
+	"name": "DS_SQL_Watermark",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_AzureSQL",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "REST_ORDERS"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "SourceSystem",
+				"type": "nvarchar"
+			},
+			{
+				"name": "EntityName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "WatermarkValue",
+				"type": "nvarchar"
+			},
+			{
+				"name": "LastRunUtc",
+				"type": "datetime2",
+				"scale": 3
+			},
+			{
+				"name": "RowsExtracted",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "Status",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "ETL_Watermark"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

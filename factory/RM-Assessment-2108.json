@@ -1,0 +1,15 @@
+{
+	"name": "RM-Assessment-2108",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "d3e2adc3-de36-43d8-a1c1-cf7852f7def6",
+		"tenantId": "330cd47f-c936-437b-be75-5070264d8a0f"
+	}
+}

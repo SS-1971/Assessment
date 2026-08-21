@@ -1,0 +1,19 @@
+{
+	"name": "DS_RestOrders",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_REST_SourceAPI",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "REST_ORDERS"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": "/orders"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

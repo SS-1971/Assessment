@@ -1,0 +1,95 @@
+{
+	"name": "DS_ADLS_Raw_Json",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_Raw",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "REST_ORDERS"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "data_f7407e51-8b2d-4634-9b3c-950f5defd061_ac0543aa-df7a-41d1-9ba4-9e1dc4c97465.json",
+				"folderPath": "raw/api/SourceApi/Orders",
+				"fileSystem": "raw"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"carts": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "integer"
+							},
+							"products": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "integer"
+										},
+										"title": {
+											"type": "string"
+										},
+										"price": {
+											"type": "number"
+										},
+										"quantity": {
+											"type": "integer"
+										},
+										"total": {
+											"type": "number"
+										},
+										"discountPercentage": {
+											"type": "number"
+										},
+										"discountedTotal": {
+											"type": "number"
+										},
+										"thumbnail": {
+											"type": "string"
+										}
+									}
+								}
+							},
+							"total": {
+								"type": "number"
+							},
+							"discountedTotal": {
+								"type": "number"
+							},
+							"userId": {
+								"type": "integer"
+							},
+							"totalProducts": {
+								"type": "integer"
+							},
+							"totalQuantity": {
+								"type": "integer"
+							}
+						}
+					}
+				},
+				"total": {
+					"type": "integer"
+				},
+				"skip": {
+					"type": "integer"
+				},
+				"limit": {
+					"type": "integer"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
