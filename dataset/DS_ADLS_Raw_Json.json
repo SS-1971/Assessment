@@ -5,6 +5,11 @@
 			"referenceName": "LS_ADLS_Raw",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"fileName": {
+				"type": "string"
+			}
+		},
 		"folder": {
 			"name": "REST_ORDERS"
 		},
@@ -13,7 +18,10 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "data_f7407e51-8b2d-4634-9b3c-950f5defd061_ac0543aa-df7a-41d1-9ba4-9e1dc4c97465.json",
+				"fileName": {
+					"value": "@dataset().fileName",
+					"type": "Expression"
+				},
 				"folderPath": "raw/api/SourceApi/Orders",
 				"fileSystem": "raw"
 			}
