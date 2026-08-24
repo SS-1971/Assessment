@@ -157,8 +157,16 @@
 								}
 							},
 							"sink1": {
-								"schema": "dbo",
-								"table": "orders"
+								"schema": "sales",
+								"table": "Orders"
+							},
+							"sink2": {
+								"schema": "sales",
+								"table": "Products"
+							},
+							"sink3": {
+								"schema": "sales",
+								"table": "Order_Products"
 							}
 						}
 					},
@@ -187,7 +195,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "fileName",
-					"value": "orders_@{formatDateTime(utcnow(),'yyyyMMdd_HHmmss')}.json"
+					"value": {
+						"value": "orders_@{formatDateTime(utcnow(),'yyyyMMdd_HHmmss')}.json",
+						"type": "Expression"
+					}
 				}
 			}
 		],
