@@ -62,7 +62,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "WB-GetToken",
+						"activity": "fileName",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -116,11 +116,86 @@
 				"outputs": [
 					{
 						"referenceName": "DS_ADLS_Raw_Json",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"fileName": {
+								"value": "@variables('fileName')",
+								"type": "Expression"
+							}
+						}
 					}
 				]
+			},
+			{
+				"name": "TransformRawData",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "CD-CopyRawData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "TransformRawData",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"RawData": {
+								"fileName": {
+									"value": "@variables('fileName')",
+									"type": "Expression"
+								}
+							},
+							"sink1": {
+								"schema": "dbo",
+								"table": "orders"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "fileName",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "WB-GetToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "fileName",
+					"value": "orders_@{formatDateTime(utcnow(),'yyyyMMdd_HHmmss')}.json"
+				}
 			}
 		],
+		"variables": {
+			"fileName": {
+				"type": "String"
+			}
+		},
 		"folder": {
 			"name": "Activity_Pipeline"
 		},

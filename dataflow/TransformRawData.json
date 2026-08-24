@@ -1,0 +1,81 @@
+{
+	"name": "TransformRawData",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_ADLS_Raw_Json",
+						"type": "DatasetReference"
+					},
+					"name": "RawData"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "CartFlatten"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          carts as (id as integer, products as (id as integer, title as string, price as double, quantity as integer, total as double, discountPercentage as double, discountedTotal as double, thumbnail as string)[], total as double, discountedTotal as double, userId as integer, totalProducts as integer, totalQuantity as integer)[],",
+				"          total as integer,",
+				"          skip as integer,",
+				"          limit as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'documentPerLine') ~> RawData",
+				"RawData foldDown(unroll(carts),",
+				"     mapColumn(",
+				"          id = carts.id,",
+				"          products = carts.products,",
+				"          total = carts.total,",
+				"          discountedTotal = carts.discountedTotal,",
+				"          userId = carts.userId,",
+				"          totalProducts = carts.totalProducts,",
+				"          totalQuantity = carts.totalQuantity",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> CartFlatten",
+				"CartFlatten sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          order_id as long,",
+				"          order_date as timestamp,",
+				"          customer_id as long,",
+				"          customer_email as string,",
+				"          line_item_sku as string,",
+				"          line_item_qty as integer,",
+				"          line_item_price as decimal(18,4),",
+				"          raw_payload as string,",
+				"          ingest_ts as timestamp,",
+				"          source_file as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          order_id = id,",
+				"          customer_id = userId",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

@@ -5,6 +5,14 @@
 			"referenceName": "LS_AzureSQL",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"schema": {
+				"type": "string"
+			},
+			"table": {
+				"type": "string"
+			}
+		},
 		"folder": {
 			"name": "REST_ORDERS"
 		},
@@ -60,8 +68,14 @@
 			}
 		],
 		"typeProperties": {
-			"schema": "dbo",
-			"table": "stg_Orders"
+			"schema": {
+				"value": "@dataset().schema",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().table",
+				"type": "Expression"
+			}
 		}
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
