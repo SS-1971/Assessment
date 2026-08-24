@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT WatermarkValue\nFROM dbo.ETL_Watermark\nWHERE SourceSystem = 'SourceAPI'\n  AND EntityName = 'Orders';",
+						"sqlReaderQuery": "SELECT EntityName, WatermarkValue\nFROM meta.ETL_Watermark\nWHERE SourceSystem = 'SourceAPI'\n  AND EntityName IN ('Orders', 'Products');",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -33,7 +33,13 @@
 				"type": "WebActivity",
 				"dependsOn": [
 					{
-						"activity": "LK-GetWaterMark",
+						"activity": "setproductWaterMark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "setOrderWaterMark",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -149,6 +155,16 @@
 					"dataflow": {
 						"referenceName": "TransformRawData",
 						"type": "DataFlowReference",
+						"parameters": {
+							"order_id": {
+								"value": "@variables('orderWaterMark')",
+								"type": "Expression"
+							},
+							"product_id": {
+								"value": "@variables('productWaterMark')",
+								"type": "Expression"
+							}
+						},
 						"datasetParameters": {
 							"RawData": {
 								"fileName": {
@@ -156,15 +172,15 @@
 									"type": "Expression"
 								}
 							},
-							"sink1": {
+							"sinkForStoringOrders": {
 								"schema": "sales",
 								"table": "Orders"
 							},
-							"sink2": {
+							"sinkForStoringProducts": {
 								"schema": "sales",
 								"table": "Products"
 							},
-							"sink3": {
+							"SinkForStoringOrderProducts": {
 								"schema": "sales",
 								"table": "Order_Products"
 							}
@@ -200,11 +216,92 @@
 						"type": "Expression"
 					}
 				}
+			},
+			{
+				"name": "setproductWaterMark",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "LK-GetWaterMark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "productWaterMark",
+					"value": {
+						"value": "@activity('LK-GetWaterMark').output.value[0].WatermarkValue",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "setOrderWaterMark",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "LK-GetWaterMark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "orderWaterMark",
+					"value": {
+						"value": "@activity('LK-GetWaterMark').output.value[1].WatermarkValue",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Stored procedure1",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "TransformRawData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[curated].[Load_Stage_To_Curated]"
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_AzureSQL",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"variables": {
 			"fileName": {
 				"type": "String"
+			},
+			"productWaterMark": {
+				"type": "Integer"
+			},
+			"orderWaterMark": {
+				"type": "Integer"
 			}
 		},
 		"folder": {

@@ -39,7 +39,7 @@
 			}
 		],
 		"typeProperties": {
-			"schema": "dbo",
+			"schema": "meta",
 			"table": "ETL_Watermark"
 		}
 	},
