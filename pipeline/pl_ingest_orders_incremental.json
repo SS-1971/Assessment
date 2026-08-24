@@ -285,7 +285,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[curated].[Load_Stage_To_Curated]"
+					"storedProcedureName": "[curated].[Load_Sales_To_Curated]"
 				},
 				"linkedServiceName": {
 					"referenceName": "LS_AzureSQL",
