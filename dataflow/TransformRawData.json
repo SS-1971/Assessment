@@ -19,11 +19,37 @@
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
 				}
 			],
 			"transformations": [
 				{
 					"name": "CartFlatten"
+				},
+				{
+					"name": "ProductFlatten"
+				},
+				{
+					"name": "alterRowForOrderProducts"
+				},
+				{
+					"name": "alterRowForProducts"
+				},
+				{
+					"name": "alterRowForOrders"
 				}
 			],
 			"scriptLines": [
@@ -49,7 +75,22 @@
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> CartFlatten",
-				"CartFlatten sink(allowSchemaDrift: true,",
+				"CartFlatten foldDown(unroll(products),",
+				"     mapColumn(",
+				"          id,",
+				"          products,",
+				"          total,",
+				"          discountedTotal,",
+				"          userId,",
+				"          totalProducts,",
+				"          totalQuantity",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> ProductFlatten",
+				"RawData alterRow(upsertIf(true())) ~> alterRowForOrderProducts",
+				"ProductFlatten alterRow(upsertIf(true())) ~> alterRowForProducts",
+				"CartFlatten alterRow(upsertIf(true())) ~> alterRowForOrders",
+				"alterRowForOrders sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          order_id as long,",
@@ -64,17 +105,64 @@
 				"          source_file as string",
 				"     ),",
 				"     deletable:false,",
-				"     insertable:true,",
+				"     insertable:false,",
 				"     updateable:false,",
-				"     upsertable:false,",
+				"     upsertable:true,",
+				"     keys:['order_id'],",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
 				"          order_id = id,",
-				"          customer_id = userId",
-				"     )) ~> sink1"
+				"          total",
+				"     )) ~> sink1",
+				"alterRowForProducts sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          order_id as long,",
+				"          order_date as timestamp,",
+				"          customer_id as long,",
+				"          customer_email as string,",
+				"          line_item_sku as string,",
+				"          line_item_qty as integer,",
+				"          line_item_price as decimal(18,4),",
+				"          raw_payload as string,",
+				"          ingest_ts as timestamp,",
+				"          source_file as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['products.id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink2",
+				"alterRowForOrderProducts sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          order_id as long,",
+				"          order_date as timestamp,",
+				"          customer_id as long,",
+				"          customer_email as string,",
+				"          line_item_sku as string,",
+				"          line_item_qty as integer,",
+				"          line_item_price as decimal(18,4),",
+				"          raw_payload as string,",
+				"          ingest_ts as timestamp,",
+				"          source_file as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['carts[1].id','carts[1].products[1].id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink3"
 			]
 		}
 	}
